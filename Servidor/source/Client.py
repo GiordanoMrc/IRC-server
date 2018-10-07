@@ -17,7 +17,6 @@ while 1:
     mensagem = input()
     #se o usuário quiser sair sai
     if mensagem == '/quit':
-       sock.close()
        break
     elif mensagem == '/clear':
         os.system('cls' if os.name == 'nt' else 'clear')
