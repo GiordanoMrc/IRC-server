@@ -11,16 +11,16 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 print("Esperando para Conectar no Server...")
 time.sleep(5)
 sock.connect((socket.gethostname(), portaHost))
-print("Pronto, falai =]")
+print("    Pronto, falai =]  ")
+print("--------------------\n")
 
 while 1:
     mensagem = input()
     #se o usuário quiser sair sai
-    if mensagem == '/quit':
+    if mensagem == 'quit':
        break
     elif mensagem == '/clear':
         os.system('cls' if os.name == 'nt' else 'clear')
     else:
              sock.send(mensagem.encode("utf-8"))
-             time.sleep(5)
              answer = sock.recv(512)
