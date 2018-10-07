@@ -33,14 +33,14 @@ class ServerApp:
         self.sock.listen(10)
 
     def run(self):
-        print ("!--------------------!")
-        print ("!Comandos Suportados:!")
-        print ("!       ?USUARIO     !")
-        print ("!       ?SAIR        !")
-        print ("!       ?ENTRAR      !")
-        print ("!       ?LISTAR      !")
-        print ("!       ?SAIRC       !")
-        print ("!--------------------!")
+        print ("!-----------------------------------!")
+        print ("!Comandos Suportados:               !")
+        print ("!   ?USUARIO (nick, host, nome)     !")
+        print ("!       ?SAIR                       !")
+        print ("!       ?ENTRAR (canal)             !")
+        print ("!       ?LISTAR                     !")
+        print ("!       ?SAIRC   (canal)            !")
+        print ("!-----------------------------------!")
         while 1:
             clientsock, address = self.sock.accept()
             while 1:
@@ -148,7 +148,7 @@ class ServerApp:
         return("ok")
 
     def listChannelHandler(self, clientAddr, arg):
-        self.sendMsgChannel("lista de canais:\n", self.clients[clientAddr].channel)
+        self.sendMsgChannel("listagem:", self.clients[clientAddr].channel)
         for channel in self.canais:
             self.sendMsgChannel("!  %d)" %(len(self.canais[channel].clients))+ channel, self.clients[clientAddr].channel)
         return ("")
