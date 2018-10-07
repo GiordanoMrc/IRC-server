@@ -2,8 +2,8 @@ import ServerApp
 import socket
 
 
-class ServerCliente:
-    def __init__(self, ipv4, sock, nickname,realname, hostname, canal):
+class Cliente:
+    def __init__(self, ipv4, sock, nickname,realname, hostname, channel):
         self.ipv4     = ipv4
         self.sock     = sock
         self.nickname = nickname

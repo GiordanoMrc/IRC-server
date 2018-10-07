@@ -2,7 +2,7 @@ import ServerCliente
 import socket
 #import ServerCanais
 
-portaHost= 65000
+portaHost= 65001
 
 class ServerCanal:
     def __init__(self, name):
@@ -17,7 +17,7 @@ class ServerApp:
         self.clients = {}
         self.canais   = {}
 
-        self.canais["canal"] = ServerCanal("canal")
+        self.canais["canal1"] = ServerCanal("canal1")
 
         # registra handlers para comandos
         self.handlers = {"NICK"   : self.nickClientHandler,
@@ -38,31 +38,25 @@ class ServerApp:
         #   reservado para escuta
         self.sock.listen(10)
 
-        # não blocante
-        self.sock.setblocking(0)
-
-        self.run()
 
     def run(self):
         while 1:
             # aceita requisição de conexão do processo 1,
             #   e recebe um socket para o cliente e o
             #   endereço de IP dele
-            try:(clientsock, address) = self.sock.accept()
-            except: pass
+            clientsock, address = self.sock.accept()
+
 
             while 1:
                 # recebe do socket do cliente (processo 1) uma mensagem de 512 bytes
-                try:
                     mensagem_recebida = clientsock.recv(512).decode("utf-8")
-                    print(mensagem_recebida)
-                    if not mensagem_recebida:
-                        break
                     answer = self.parseCommands(clientsock, address, mensagem_recebida)
                     if len(answer) > 0:
-                        self.sendMessage(answer)
-                except: pass
+                        for Erro in answer:
+                            for item in Erro:
+                                self.sendMsgChannel((self.clients[address].nickname + ". %s" %(item)), self.clients[address].channel)
         pass
+
 
     def parseCommands(self, clientsock, clientAddr, msg):
         mensagem_recebida = msg.split('\n') # comandos separados por nova linha
@@ -71,13 +65,11 @@ class ServerApp:
 
 
         if clientAddr not in self.clients.keys():
-            self.clients[clientAddr] = ServerClient(clientAddr, clientsock)
-            self.canais[""].clients[clientAddr] = self.clients[clientAddr]
+            self.clients[clientAddr] = ServerCliente.Cliente(clientAddr, clientsock, "","","","")
+            self.canais["canal1"].clients[clientAddr] = self.clients[clientAddr]
+            self.clients[clientAddr].channel = "canal1"
 
-        client = self.clients[clientAddr]
-
-
-        for command in commands:
+        for command in mensagem_recebida:
             comm_n_args = command.split(' ')
             if comm_n_args[0][0] is '?':
                 if comm_n_args[0][1:] in self.handlers.keys():
@@ -85,33 +77,40 @@ class ServerApp:
                     if len(ans) > 0:
                         invalid_parameters.append(ans)
                 else:
-                    unrecognized_commands += comm_n_args[0]
+                    unrecognized_commands.append("Unrecognized Command:" + comm_n_args[0][1:])
             else:
-                self.sendMsgChannel(command, client.channel)
+                if (self.clients[clientAddr].nickname == ""):
+                    invalid_parameters.append('Você precisa de um nick')
+                else:
+                    self.sendMsgChannel((self.clients[clientAddr].nickname + ": %s" % (command)), self.clients[clientAddr].channel)
 
         answer = []
         if len(unrecognized_commands) > 0:
-            answer += "Unrecognized commands: %s" % unrecognized_commands
+            answer.append(unrecognized_command)
         if len(invalid_parameters) > 0:
-            answer += "Invalid parameters: %s\n" % invalid_parameters
+            answer.append(invalid_parameters)
 
         return answer
 
+    def closeServer(self):
+        self.sock.close()
+
     def sendMsgChannel(self, msg, channel):
             for client in self.canais[channel].clients:
-                self.clients[client].sendMsg(msg)
+                self.clients[client].sendMsg(channel + "~%s" %(msg))
 
-    def nickClientHandler(self, clientAddr, nick):
+    def nickClientHandler(self, clientAddr, args):
             for client in self.clients:
-                if (nick == self.clients[client].nickname):
-                    self.clients[client].alteraNick("Já existe esse nick")
-                    return ("lixo")
+                if (args[0] == self.clients[client].nickname):
+                    return "Já existe esse nick"
                 else:
-                    self.clients[clientAddr].nickname= nick
-                    return ("ok")
+                    self.clients[clientAddr].nickname= args[0]
 
+            self.sendMsgChannel("ok", self.clients[clientAddr].channel)
+            return ""
 
     def newClientHandler(self, clientAddr, args):
+
         pass
 
     def deleteClientHandler(self, clientAddr, args):
@@ -124,11 +123,8 @@ class ServerApp:
 
         pass
 
-    def listChannelHandler(self, clientAddr, args):
+    def listChannelHandler(self, clientAddr, channel):
+        self.sendMsgChannel("listando canais:\n", self.clients[clientAddr].channel)
         for canal in self.canais:
-            nomeCanal = self.canais[canal].name
-            self.clients[clientAddr].sendMsg(nomeCanal)
+            self.sendMsgChannel(channel + ": %d" (len(self.canais[channel].clients)), self.clients[clientAddr].channel)
         return ("ok")
-
-    def closeServer(self):
-        self.sock.close()

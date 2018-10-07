@@ -3,4 +3,4 @@ import time
 import ServerApp
 
 server = ServerApp.ServerApp()
-ServerApp.run()
+server.run()

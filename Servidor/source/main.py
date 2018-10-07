@@ -2,7 +2,6 @@ import os
 import time
 import ServerApp
 import ServerCliente
-import ServerCanais
 import socket
 
 def main():
