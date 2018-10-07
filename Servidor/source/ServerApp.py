@@ -125,8 +125,8 @@ class ServerApp:
         return("ok")
 
     def subscribeChannelHandler(self, clientAddr, newChannel):
-        if newChannel[0] not in self.canais.key():
-            self.canais[channel[0]] = ServerCanal(newChannel[0])
+        if newChannel[0] not in self.canais.keys():
+            self.canais[newChannel[0]] = ServerCanal(newChannel[0])
 
         self.canais[newChannel[0]].clients[clientAddr] = self.clients[clientAddr]
         self.clients[clientAddr].channel = newChannel[0]
