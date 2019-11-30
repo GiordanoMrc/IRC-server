@@ -2,6 +2,7 @@ import ServerCliente
 import socket
 import os
 import sys
+import rsa
 
 portaHost= 65015
 
@@ -39,6 +40,11 @@ class ServerApp:
         print ("!Bem Vindo ao min-IRC:              !")
         print ("!       Pode Falar!                 !")
         print ("!-----------------------------------!")
+
+        chaves = rsa.gera_chaves()
+        public_key = chaves[0]
+        private_key = chaves[1]
+
         while 1:
             clientsock, address = self.sock.accept()
             while 1:
