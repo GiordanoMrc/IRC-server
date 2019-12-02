@@ -25,7 +25,7 @@ class Cliente(Thread):
         self.start()
 
     def sendMsg(self, msg):
-        self.sock.sendall(msg.encode("utf-8"))
+        self.sock.send(msg.encode("utf-8"))
         print(msg)
 
 
@@ -40,7 +40,6 @@ class ServerApp:
     def __init__(self, portaHost):
         self.clients = {}
         self.canais   = {}
-        #self.handlers = {}
         self.canais["canal-default"] = ServerCanal("canal-default")
 
         # registra handlers para comandos
@@ -79,8 +78,12 @@ class ServerApp:
                         for Erro in answer:
                             for item in Erro:
                                 self.sendMsgChannel((self.clients[address].nickname + ". %s" %(item)), self.clients[address].channel)
+                    #else:
+                    #    self.sendMsgChannel(self.clients[address].nickname , self.clients[address].channel)
                 except:
+                    #self.sendMsgChannel(self.clients[address].nickname , self.clients[address].channel)
                     pass
+        self.closeServer()
         pass
 
 
@@ -127,11 +130,12 @@ class ServerApp:
     def closeServer(self):
         self.sock.close()
         sys.exit()
+        return ""
 
     def sendMsgChannel(self, msg, channel):
             for client in self.canais[channel].clients:
                 self.clients[client].sendMsg(channel + "~%s" %(msg))
-
+            return ""
     def nickClientHandler(self, clientAddr, args):
             for client in self.clients:
                 if (args[0] == self.clients[client].nickname):
@@ -139,7 +143,7 @@ class ServerApp:
                 else:
                     self.clients[clientAddr].nickname= args[0]
             self.sendMsgChannel("Agora você tem um Nick!", self.clients[clientAddr].channel)
-            pass
+            return ""
 
     def newClientHandler(self, clientAddr, usr):
         for client in self.clients:
@@ -191,12 +195,8 @@ class ServerApp:
 
     def exchangeKeys(self,clientAddr,arg):
         # A chave está como ?PUBK CHAVE
-        #for client in self.clients:
-        #    if(args[0] == self.client[client].public_key):
-        #        return "Essa chave publica já existe!"
-        #    else:
-        #       self.client[clientAddr].public_key= arg
+        self.clients[clientAddr].public_key= arg
         print(arg)
         self.clients[clientAddr].sendMsg(repr(s_public_key))
-        self.sendMsgChannel("Chaves Publicas Atualizadas com Sucesso.", self.clients[clientAddr].channel)
-        pass
+        #self.sendMsgChannel("Chaves Publicas Atualizadas com Sucesso.", self.clients[clientAddr].channel)
+        return ""

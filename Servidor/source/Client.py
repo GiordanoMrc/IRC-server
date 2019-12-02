@@ -5,7 +5,7 @@ import os
 import sys
 import rsa
 
-portaHost= 65039
+portaHost= 65046
 
 chaves = rsa.gera_chaves()
 c_public_key = chaves[0]
@@ -24,7 +24,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM)as c:
             print("ENVIANDO E RECEBENDO CHAVES")
             mensagem="?PUBK "+repr(c_public_key)
             receivekeys+=1
-        else:
+            c.sendall(mensagem.encode("utf-8"))
+            s_public_key = c.recv(1024).decode("utf-8")
+
+            print(s_public_key)
+            time.sleep(5)
+
             os.system('cls' if os.name == 'nt' else 'clear')
             print ("!-----------------------------------!")
             print ("!Comandos Suportados:               !")
@@ -39,29 +44,29 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM)as c:
             print ("!    Seja Bem vindo ao min-IRC      !")
             print ("!-----------------------------------!")
             print (">")
+        else:
             mensagem = input()
 
-        if mensagem == '/quit':
-            c.close()
-            sys.exit()
+            if mensagem == '/quit':
+                c.close()
+                sys.exit()
 
-        elif mensagem == '/clear':
-            os.system('cls' if os.name == 'nt' else 'clear')
-            print ("!-----------------------------------!")
-            print ("!Comandos Suportados:               !")
-            print ("!   ?USUARIO (nick, host, nome)     !")
-            print ("!       ?SAIR                       !")
-            print ("!       ?ENTRAR (canal)             !")
-            print ("!       ?LISTAR                     !")
-            print ("!       ?SAIRC   (canal)            !")
-            print ("!       ?FECHAR                     !")
-            print ("!       /clear                      !")
-            print ("!+++++++++++++++++++++++++++++++++++!")
-            print ("!    Seja Bem vindo ao min-IRC      !")
-            print ("!-----------------------------------!")
-            print (">")
-        else:
-             c.send(mensagem.encode("utf-8"))
-             answer = c.recv(1024).decode("utf-8")
-
-             print(answer)
+            elif mensagem == '/clear':
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print ("!-----------------------------------!")
+                print ("!Comandos Suportados:               !")
+                print ("!   ?USUARIO (nick, host, nome)     !")
+                print ("!       ?SAIR                       !")
+                print ("!       ?ENTRAR (canal)             !")
+                print ("!       ?LISTAR                     !")
+                print ("!       ?SAIRC   (canal)            !")
+                print ("!       /quit                       !")
+                print ("!       /clear                      !")
+                print ("!+++++++++++++++++++++++++++++++++++!")
+                print ("!    Seja Bem vindo ao min-IRC      !")
+                print ("!-----------------------------------!")
+                print (">")
+            else:
+                 c.sendall(mensagem.encode("utf-8"))
+                 answer = c.recv(1024).decode("utf-8")
+                 print(answer)
