@@ -5,7 +5,7 @@ import os
 import sys
 import rsa
 
-portaHost= 65046
+portaHost= 65075
 
 chaves = rsa.gera_chaves()
 c_public_key = chaves[0]
@@ -26,11 +26,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM)as c:
             receivekeys+=1
             c.sendall(mensagem.encode("utf-8"))
             s_public_key = c.recv(1024).decode("utf-8")
-
+            aux = s_public_key.split(',')
+            e = int(aux[0][1:])
+            n = int(aux[1][1:-1])
             print(s_public_key)
             time.sleep(5)
 
-            os.system('cls' if os.name == 'nt' else 'clear')
+            #os.system('cls' if os.name == 'nt' else 'clear')
             print ("!-----------------------------------!")
             print ("!Comandos Suportados:               !")
             print ("!   ?USUARIO (nick, host, nome)     !")
@@ -67,6 +69,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM)as c:
                 print ("!-----------------------------------!")
                 print (">")
             else:
+                 mensagem = rsa.converte_to_decimal(mensagem)
+                 print(mensagem)
+                 mensagem = rsa.crito_decripto(mensagem,e,n)
+                 print(mensagem)
+                 mensagem = str(mensagem)
                  c.sendall(mensagem.encode("utf-8"))
                  answer = c.recv(1024).decode("utf-8")
                  print(answer)

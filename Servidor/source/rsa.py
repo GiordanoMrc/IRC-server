@@ -69,8 +69,16 @@ def converte_to_decimal(s):
     return sum(ord(s[byte])<<8*(nchars-byte-1) for byte in range(nchars))
 
 # Converte decimal para String
-def converte_to_string(x):
-    return ''.join(chr((x>>8*(nchars-byte-1))&0xFF) for byte in range(nchars))
+def converte_string(x):
+    nchars  = 1
+    n_antigo = 1
+    while 1:
+        variable = ''.join(chr((x>>8*(nchars-byte-1))&0xFF) for byte in range(nchars))
+        if (variable[0:1] == '\x00'):
+            break
+        else:
+            nchars = nchars + 1
+    return variable[1:]
 
 #criptografa ou decriptografa X
 def crito_decripto(x,chave,n):

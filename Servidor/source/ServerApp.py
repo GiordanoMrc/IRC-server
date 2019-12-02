@@ -9,7 +9,8 @@ s_public_key = chaves[0]
 s_private_key = chaves[1]
 print(s_public_key)
 print(s_private_key)
-receivekeys = 0
+print("\n\n")
+
 
 class Cliente(Thread):
     numClients = 0
@@ -26,7 +27,7 @@ class Cliente(Thread):
 
     def sendMsg(self, msg):
         self.sock.send(msg.encode("utf-8"))
-        print(msg)
+        #print(msg)
 
 
 class ServerCanal:
@@ -41,7 +42,7 @@ class ServerApp:
         self.clients = {}
         self.canais   = {}
         self.canais["canal-default"] = ServerCanal("canal-default")
-
+        self.receivekeys = 0
         # registra handlers para comandos
         self.handlers = {"NICK"   : self.nickClientHandler,
                          "USUARIO": self.newClientHandler,
@@ -59,7 +60,7 @@ class ServerApp:
         self.sock.listen(10)
 
     def run(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        #os.system('cls' if os.name == 'nt' else 'clear')
         print ("!-----------------------------------!")
         print ("!Bem Vindo ao min-IRC:              !")
         print ("!       Pode Falar!                 !")
@@ -68,21 +69,30 @@ class ServerApp:
         while 1:
             (clientsock, address) = self.sock.accept()
             while 1:
-                try:
-                    mensagem_recebida = clientsock.recv(2048).decode("utf-8")
-                    #print(mensagem_recebida)
-                    if not mensagem_recebida:
-                        break
-                    answer = self.parseCommands(clientsock, address, mensagem_recebida)
-                    if len(answer) > 0:
-                        for Erro in answer:
-                            for item in Erro:
-                                self.sendMsgChannel((self.clients[address].nickname + ". %s" %(item)), self.clients[address].channel)
-                    #else:
-                    #    self.sendMsgChannel(self.clients[address].nickname , self.clients[address].channel)
-                except:
+                mensagem_recebida = clientsock.recv(2048).decode("utf-8")
+                print(self.receivekeys)
+                if (self.receivekeys>0):
+                    mensagem_recebida = int(mensagem_recebida)
+                    print("INT MSG recv")
+                    print(mensagem_recebida)
+                    mensagem_recebida = rsa.crito_decripto(mensagem_recebida,s_private_key[0], s_private_key[1])
+                    print("INT MSG recv decrypt")
+                    print(mensagem_recebida)
+                    mensagem_recebida = rsa.converte_string(mensagem_recebida)
+                    print("STRING decrypt")
+                    print(mensagem_recebida)
+                #print("2:"+mensagem_recebida)
+                if not mensagem_recebida:
+                    break
+                answer = self.parseCommands(clientsock, address, mensagem_recebida)
+
+                if len(answer) > 0:
+                    for Erro in answer:
+                        for item in Erro:
+                            self.sendMsgChannel((self.clients[address].nickname + ". %s" %(item)), self.clients[address].channel)
+                #except:
                     #self.sendMsgChannel(self.clients[address].nickname , self.clients[address].channel)
-                    pass
+                #    pass
         self.closeServer()
         pass
 
@@ -111,7 +121,7 @@ class ServerApp:
                     if len(ans) > 0:
                         invalid_parameters.append(ans)
                 else:
-                        unrecognized_commands.append("Unrecognized Command:" + comm_n_args[0][1:]) # verifica se é comando ou não
+                    unrecognized_commands.append("Unrecognized Command:" + comm_n_args[0][1:]) # verifica se é comando ou não
             else:
                 if (self.clients[clientAddr].nickname == ""):
                     invalid_parameters.append('Você precisa de um nick para enviar mensagens.')
@@ -196,7 +206,6 @@ class ServerApp:
     def exchangeKeys(self,clientAddr,arg):
         # A chave está como ?PUBK CHAVE
         self.clients[clientAddr].public_key= arg
-        print(arg)
+        self.receivekeys=1
         self.clients[clientAddr].sendMsg(repr(s_public_key))
-        #self.sendMsgChannel("Chaves Publicas Atualizadas com Sucesso.", self.clients[clientAddr].channel)
         return ""
