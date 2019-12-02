@@ -1,7 +1,7 @@
 import socket
 import time
 import ServerApp
-portaHost= 65110
+portaHost= 65039
 
 
 server = ServerApp.ServerApp(portaHost)

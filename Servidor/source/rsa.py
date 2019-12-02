@@ -2,17 +2,17 @@ import random
 from Crypto.Util import number
 
 #calcula phi de euler
-def phi(p,q): 
+def phi(p,q):
     phi = (p - 1) * (q - 1)
     return phi
 
 #Calcula GCD
-def computeGCD(x, y): 
-  
-   while(y): 
-       x, y = y, x % y 
-  
-   return x 
+def computeGCD(x, y):
+
+   while(y):
+       x, y = y, x % y
+
+   return x
 
 #Calcula o inverso
 def multiplicative_inverse(a, b):
@@ -42,7 +42,7 @@ def multiplicative_inverse(a, b):
 #gera o conjunto de chaves privada e publixa
 def gera_chaves():
 
-    n_length = 1024
+    n_length = 256
     primeNum1 = number.getPrime(n_length)
     primeNum2 = number.getPrime(n_length)
     n = primeNum1 * primeNum2

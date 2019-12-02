@@ -2,22 +2,30 @@ import socket
 import os
 import sys
 import rsa
+from threading import *
 
+chaves = rsa.gera_chaves()
+s_public_key = chaves[0]
+s_private_key = chaves[1]
+print(s_public_key)
+print(s_private_key)
+receivekeys = 0
 
-class Cliente:
+class Cliente(Thread):
     numClients = 0
-    def __init__(self, ipv4, sock, nickname,realname, hostname, channel):
+    def __init__(self, ipv4, sock,c_public_key, nickname,realname, channel):
+        Thread.__init__(self)
         self.ipv4     = ipv4
         self.sock     = sock
+        self.public_key= c_public_key
         self.nickname = nickname
-        self.hostname = hostname
         self.realname = realname
         self.channel  = channel
-
         Cliente.numClients += 1
+        self.start()
 
     def sendMsg(self, msg):
-        self.sock.send(msg.encode("utf-8"))
+        self.sock.sendall(msg.encode("utf-8"))
         print(msg)
 
 
@@ -42,7 +50,8 @@ class ServerApp:
                          "ENTRAR" : self.subscribeChannelHandler,
                          "SAIRC"  : self.unsubscribeChannelHandler,
                          "LISTAR" : self.listChannelHandler,
-                         "FECHAR" : self.closeServer
+                         "FECHAR" : self.closeServer,
+                         "PUBK" : self.exchangeKeys
                         } # Não mexer
         # requisita API do SO uma conexão AF_INET (IPV4)
         #   com protocolo de transporte SOCK_STREAM (TCP)
@@ -58,10 +67,11 @@ class ServerApp:
         print ("!-----------------------------------!")
 
         while 1:
-            clientsock, address = self.sock.accept()
+            (clientsock, address) = self.sock.accept()
             while 1:
                 try:
-                    mensagem_recebida = clientsock.recv(512).decode("utf-8")
+                    mensagem_recebida = clientsock.recv(2048).decode("utf-8")
+                    #print(mensagem_recebida)
                     if not mensagem_recebida:
                         break
                     answer = self.parseCommands(clientsock, address, mensagem_recebida)
@@ -81,12 +91,14 @@ class ServerApp:
 
 
         if clientAddr not in self.clients.keys():
-            self.clients[clientAddr] = Cliente(clientAddr, clientsock,"","","","")  #mudei!
+            self.clients[clientAddr] = Cliente(clientAddr, clientsock,"","","","")  #CRIA O CLIENTE!
             self.canais["canal-default"].clients[clientAddr] = self.clients[clientAddr]
             self.clients[clientAddr].channel = "canal-default"
 
 
         client = self.clients[clientAddr]
+
+
 
         for command in commands:
             comm_n_args = command.split(' ')
@@ -111,6 +123,7 @@ class ServerApp:
 
         return answer
 
+
     def closeServer(self):
         self.sock.close()
         sys.exit()
@@ -133,7 +146,7 @@ class ServerApp:
             if usr[0] == self.clients[client].nickname:
                 return "Usuario já cadastrado"
         self.clients[clientAddr].nickname = usr[0]
-        self.clients[clientAddr].hostname = usr [1]
+        #self.clients[clientAddr].hostname = usr [1]
         self.clients[clientAddr].realname = usr [2]
         self.sendMsgChannel("Bem vindo:%s  a.k.a  " %(usr[2]) +"%s" %usr[0], self.clients[clientAddr].channel )
         return ""
@@ -175,3 +188,15 @@ class ServerApp:
         for channel in self.canais:
             self.sendMsgChannel("!  %d)" %(len(self.canais[channel].clients))+ channel, self.clients[clientAddr].channel)
         return ""
+
+    def exchangeKeys(self,clientAddr,arg):
+        # A chave está como ?PUBK CHAVE
+        #for client in self.clients:
+        #    if(args[0] == self.client[client].public_key):
+        #        return "Essa chave publica já existe!"
+        #    else:
+        #       self.client[clientAddr].public_key= arg
+        print(arg)
+        self.clients[clientAddr].sendMsg(repr(s_public_key))
+        self.sendMsgChannel("Chaves Publicas Atualizadas com Sucesso.", self.clients[clientAddr].channel)
+        pass
