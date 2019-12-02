@@ -22,13 +22,19 @@ class Cliente(Thread):
         self.nickname = nickname
         self.realname = realname
         self.channel  = channel
+        self.receivekeys = 0
         Cliente.numClients += 1
         self.start()
 
     def sendMsg(self, msg):
-        self.sock.send(msg.encode("utf-8"))
-        #print(msg)
-
+        if(self.receivekeys==0):
+            self.sock.send(msg.encode("utf-8"))
+            self.receivekeys=1
+        else:
+            msg = rsa.converte_to_decimal(msg)
+            msg = rsa.crito_decripto(msg,s_private_key[0], s_private_key[1])
+            msg = str(msg)
+            self.sock.send(msg.encode("utf-8"))
 
 class ServerCanal:
     def __init__(self, name):
@@ -70,7 +76,6 @@ class ServerApp:
             (clientsock, address) = self.sock.accept()
             while 1:
                 mensagem_recebida = clientsock.recv(2048).decode("utf-8")
-                print(self.receivekeys)
                 if (self.receivekeys>0):
                     mensagem_recebida = int(mensagem_recebida)
                     print("INT MSG recv")
@@ -81,7 +86,6 @@ class ServerApp:
                     mensagem_recebida = rsa.converte_string(mensagem_recebida)
                     print("STRING decrypt")
                     print(mensagem_recebida)
-                #print("2:"+mensagem_recebida)
                 if not mensagem_recebida:
                     break
                 answer = self.parseCommands(clientsock, address, mensagem_recebida)
@@ -91,8 +95,7 @@ class ServerApp:
                         for item in Erro:
                             self.sendMsgChannel((self.clients[address].nickname + ". %s" %(item)), self.clients[address].channel)
                 #except:
-                    #self.sendMsgChannel(self.clients[address].nickname , self.clients[address].channel)
-                #    pass
+                    #pass
         self.closeServer()
         pass
 

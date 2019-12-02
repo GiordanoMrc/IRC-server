@@ -5,7 +5,7 @@ import os
 import sys
 import rsa
 
-portaHost= 65075
+portaHost= 65100
 
 chaves = rsa.gera_chaves()
 c_public_key = chaves[0]
@@ -75,5 +75,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM)as c:
                  print(mensagem)
                  mensagem = str(mensagem)
                  c.sendall(mensagem.encode("utf-8"))
+
                  answer = c.recv(1024).decode("utf-8")
+                 answer = rsa.crito_decripto(int(answer),e,n)
+                 answer = rsa.converte_string(answer)
                  print(answer)
